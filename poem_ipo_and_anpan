@@ -1,0 +1,69 @@
+#coding:utf-8
+
+import urllib
+#from datetime import datetime
+import datetime
+import time
+import pandas as pd
+
+
+
+from bs4 import BeautifulSoup
+import urllib2
+#y以下操作为了确保将中文写入文件
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
+#http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#Scheduled
+#url = 'http://reeoo.com'
+url = 'http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#Scheduled'
+request = urllib2.Request(url)
+response = urllib2.urlopen(request, timeout=20)
+content = response.read()
+soup = BeautifulSoup(content, 'html.parser')
+
+#url_all=http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#Scheduled
+
+#url_all="http://research.poems.com.hk/page/Phillip/share_recommend/PMP/ZH/streaming.asp?code=8151"
+
+
+out_file="c:\\9\\poem_ipo.csv"
+f=open(out_file,'a')
+
+stock_list=soup.find('table',class_='ipo-scheduled-items').tbody.find_all('tr')
+stock_num=len(stock_list)
+for i in range(0,stock_num):
+    #ipo截止日期当天的孖展数才是最终数目
+    ipo_end_date=stock_list[i].find_all('td')[4].get_text(";",strip=True)
+    ipo_end_month_and_day=ipo_end_date.split(';')[1]
+    ipo_end_month=int(ipo_end_month_and_day.split('-')[0])
+    ipo_end_day=int(ipo_end_month_and_day.split('-')[1])
+    #获取当天日期
+    now_date = datetime.datetime.now().date()
+    now_date_month = now_date.month
+    now_date_day = now_date.day
+    #只有当天为截止日才开始记录孖展信息
+
+    #注意修改回来!!!!!
+    if ipo_end_month==now_date_month and ipo_end_day<now_date_day:
+
+        stock_code=str(stock_list[i].find_all('td')[0].get_text(strip=True))
+        stock_name=stock_list[i].find_all('td')[1].get_text(strip=True)
+        stock_value=str(stock_list[i].find_all('td')[2].get_text(strip=True))
+        #孖展利率
+        stock_margin_interest=str(stock_list[i].find_all('td')[5].get_text(strip=True))
+        #孖展总计
+        stock_margin_sum=stock_list[i].find_all('td')[7].get_text(strip=True)
+
+        #保荐人
+        sponsor_list=stock_list[i].find_all('td')[8].find_all('option')
+        if(len(sponsor_list)==0):
+            only_one_sponsor_name=stock_list[i].find_all('td')[8].get_text(strip=True)
+            print >>f,only_one_sponsor_name
+        else:
+            for temp_i in range(0,len(sponsor_list)):
+                print >>f,sponsor_list[temp_i].get_text(strip=True)
+                print >>f,";"
+
+f.close()
