@@ -1,0 +1,24 @@
+#coding:utf-8
+
+import time
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--disable-gpu')
+driver = webdriver.Chrome(chrome_options=chrome_options)
+
+#url = "http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#PhillipMart"
+url = "http://research.poems.com.hk/page/Phillip/share_recommend/PMP_1/ZH/streaming.asp?code=1742"
+
+driver.get(url)
+time.sleep(30)
+print(driver.find_element_by_id('1742_P32').text)
+#前收市价
+print(driver.find_element_by_id('1742_P6').text)
+#升跌金额
+print(driver.find_element_by_id('1742_P7').text)
+#前收涨幅
+print(driver.find_element_by_id('1742_P8').text)
+driver.close()
