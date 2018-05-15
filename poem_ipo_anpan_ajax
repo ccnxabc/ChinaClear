@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-#python 3.x 只有urllib
+#python 3.x 只有 urllib
 import urllib
 
 #为了使用chromedrive
