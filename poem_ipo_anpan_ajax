@@ -18,45 +18,70 @@ soup = BeautifulSoup(content,'html5lib')
 #ck="$('iframe.streaming').attr('src', $(this).attr('href'));return false;">Ajax
 #版本</a>
 
-real_url=soup.find(id='GM_AjaxBtn').get('href')
+#检查是否含有相应的新股代码链接
+#当天若无新股暗盘，to_get_url的类型为NoneType
+to_get_url=soup.find(id='GM_AjaxBtn')
 
-#使用driver.get(url)只出现以下结果，怎么调整都不行
-#[0515/171430.856:INFO:CONSOLE(230)] "Uncaught ReferenceError: google is not defi
-#ned", source: http://www.poems.com.hk/zh-hk/product-and-service/initial-public-o
-#fferings/ipo-info (230)
+if to_get_url is None:
+    pass
+else:
+    real_url=to_get_url.get('href')
+    #使用driver.get(url)只出现以下结果，怎么调整都不行
+    #[0515/171430.856:INFO:CONSOLE(230)] "Uncaught ReferenceError: google is not defi
+    #ned", source: http://www.poems.com.hk/zh-hk/product-and-service/initial-public-o
+    #fferings/ipo-info (230)
 
-#后续将添加股票代码后，再输入整个url进行逐个确定暗盘OHLC价格
-url_to_append=real_url.split('=')[0]
-#具体的股票代码
-anpan_stock_all=real_url.split('=')[1]
-anpan_stock_list=anpan_stock_all.split(',')
-stock_num=len(anpan_stock_list)
+    #后续将添加股票代码后，再输入整个url进行逐个确定暗盘OHLC价格
+    url_to_append=real_url.split('=')[0]
+    #具体的股票代码
+    anpan_stock_all=real_url.split('=')[1]
+    anpan_stock_list=anpan_stock_all.split(',')
+    stock_num=len(anpan_stock_list)
 
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-gpu')
-driver = webdriver.Chrome(chrome_options=chrome_options)
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
 
-for i in range(0,stock_num):
-    second_real_url=url_to_append+"="+anpan_stock_list[i]
-    driver.get(second_real_url)
-    time.sleep(30)
+    out_file="c:\\9\\poem_anpan.csv"
+    f=open(out_file,'a')
 
-    #driver.find_element_by_id('P1').text
-    # '8105\n8521'
+    for i in range(0,stock_num):
+        second_real_url=url_to_append+"="+anpan_stock_list[i]
+        driver.get(second_real_url)
+        time.sleep(30)
 
-    #股票代码_P6 的id表示的是IPO定价
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P6").text)
+        #driver.find_element_by_id('P1').text
+        # '8105\n8521'
 
-    #股票代码_P9/P10/P11/P5 的id表示的是OHLC
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P9").text)
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P10").text)
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P11").text)
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P5").text)
+        #股票代码_P6 的id表示的是IPO定价
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P6").text)
+        OfferPrice=driver.find_element_by_id(anpan_stock_list[i]+"_P6").text
 
-    #股票代码_P8 的id表示的是涨跌绝对值
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P8").text)
-    #股票代码_P7 的id表示的是涨跌幅度
-    print(driver.find_element_by_id(anpan_stock_list[i]+"_P7").text)
+        #股票代码_P9/P10/P11/P5 的id表示的是OHLC
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P9").text)
+        Price_O=driver.find_element_by_id(anpan_stock_list[i]+"_P9").text
 
-driver.close()
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P10").text)
+        Price_H=driver.find_element_by_id(anpan_stock_list[i]+"_P10").text
+
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P11").text)
+        Price_L=driver.find_element_by_id(anpan_stock_list[i]+"_P11").text
+
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P5").text)
+        Price_C=driver.find_element_by_id(anpan_stock_list[i]+"_P5").text
+
+        #股票代码_P8 的id表示的是涨跌绝对值
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P8").text)
+        GainLoss=driver.find_element_by_id(anpan_stock_list[i]+"_P8").text
+        #股票代码_P7 的id表示的是涨跌幅度
+        print(driver.find_element_by_id(anpan_stock_list[i]+"_P7").text)
+        Percent=driver.find_element_by_id(anpan_stock_list[i]+"_P7").text
+
+        print(anpan_stock_list[i]+","+OfferPrice+","+Price_O+","+Price_H+","+Price_L+","+Price_C+","+GainLoss+","+Percent,file=f)
+
+    driver.close()
+    f.close()
+
+
+
