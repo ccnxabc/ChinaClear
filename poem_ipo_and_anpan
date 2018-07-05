@@ -1,4 +1,6 @@
 #coding:utf-8
+#python 2.x
+#中文简体，繁体乱码事宜还需解决
 
 import urllib
 #from datetime import datetime
@@ -17,7 +19,12 @@ sys.setdefaultencoding('utf-8')
 
 #http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#Scheduled
 #url = 'http://reeoo.com'
-url = 'http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#Scheduled'
+#繁体
+#url = 'http://www.poems.com.hk/zh-hk/product-and-service/initial-public-offerings/ipo-info/#Scheduled'
+#英文
+url = 'http://www.poems.com.hk/en-us/product-and-service/initial-public-offerings/ipo-info/#Scheduled'
+#简体
+#url = 'http://www.poems.com.hk/zh-cn/product-and-service/initial-public-offerings/ipo-info/#Scheduled'
 request = urllib2.Request(url)
 response = urllib2.urlopen(request, timeout=20)
 content = response.read()
@@ -28,42 +35,71 @@ soup = BeautifulSoup(content, 'html.parser')
 #url_all="http://research.poems.com.hk/page/Phillip/share_recommend/PMP/ZH/streaming.asp?code=8151"
 
 
-out_file="c:\\9\\poem_ipo.csv"
+#out_file="c:\\9\\poem_ipo.csv"
+out_file="c:\\9\\poem_2.csv"
 f=open(out_file,'a')
 
+#获得已爬取的股票代码
+df = pd.read_csv(out_file)
+df_code_str=str(df.ix[:,0])
+
 stock_list=soup.find('table',class_='ipo-scheduled-items').tbody.find_all('tr')
+
 stock_num=len(stock_list)
 for i in range(0,stock_num):
     #ipo截止日期当天的孖展数才是最终数目
     ipo_end_date=stock_list[i].find_all('td')[4].get_text(";",strip=True)
+    ipo_end_year=ipo_end_date.split(';')[0]
     ipo_end_month_and_day=ipo_end_date.split(';')[1]
     ipo_end_month=int(ipo_end_month_and_day.split('-')[0])
     ipo_end_day=int(ipo_end_month_and_day.split('-')[1])
+    ipo_end_date_2_print=str(ipo_end_year)+"/"+str(ipo_end_month)+"/"+str(ipo_end_day)
+
+    ipo_list_date=stock_list[i].find_all('td')[3].get_text(";",strip=True)
+    ipo_list_year=ipo_list_date.split(';')[0]
+    ipo_list_month_and_day=ipo_list_date.split(';')[1]
+    ipo_list_month=int(ipo_list_month_and_day.split('-')[0])
+    ipo_list_day=int(ipo_list_month_and_day.split('-')[1])
+    ipo_list_date_2_print=str(ipo_list_year)+"/"+str(ipo_list_month)+"/"+str(ipo_list_day)
+
     #获取当天日期
-    now_date = datetime.datetime.now().date()
+    #now_date = datetime.datetime.now().dlistate()
+    now_date = datetime.datetime.now()
+    now_date_year = now_date.year
     now_date_month = now_date.month
     now_date_day = now_date.day
+    now_date_2_print=str(now_date_year)+"/"+str(now_date_month)+"/"+str(now_date_day)
     #只有当天为截止日才开始记录孖展信息
 
     #注意修改回来!!!!!
-    if ipo_end_month==now_date_month and ipo_end_day<now_date_day:
+#    if ipo_end_month<=now_date_month and ipo_end_day<now_date_day:
+    #为什么这里不是"<=大于等于"呢，因为上午的时候募集还未结束，但"<=大于等于"已经成立，会导致数据不准；因此必须"<大于"
+    if datetime.datetime.strptime(ipo_end_date_2_print, "%Y/%m/%d")<datetime.datetime.strptime(now_date_2_print, "%Y/%m/%d"):
 
         stock_code=str(stock_list[i].find_all('td')[0].get_text(strip=True))
-        stock_name=stock_list[i].find_all('td')[1].get_text(strip=True)
-        stock_value=str(stock_list[i].find_all('td')[2].get_text(strip=True))
-        #孖展利率
-        stock_margin_interest=str(stock_list[i].find_all('td')[5].get_text(strip=True))
-        #孖展总计
-        stock_margin_sum=stock_list[i].find_all('td')[7].get_text(strip=True)
+        if df_code_str.find(stock_code)==-1:
+            # 	Bank of Jiujiang Co., Ltd. 对于这种要将逗号替换掉
+            stock_name=stock_list[i].find_all('td')[1].get_text(strip=True)
+            #将逗号用空值替换掉
+            stock_name=stock_name.replace(",","")
+            stock_value=str(stock_list[i].find_all('td')[2].get_text(strip=True))
+            #孖展利率
+            stock_margin_interest=str(stock_list[i].find_all('td')[5].get_text(strip=True))
+            #孖展总计
+            stock_margin_sum=stock_list[i].find_all('td')[7].get_text(strip=True)
 
-        #保荐人
-        sponsor_list=stock_list[i].find_all('td')[8].find_all('option')
-        if(len(sponsor_list)==0):
-            only_one_sponsor_name=stock_list[i].find_all('td')[8].get_text(strip=True)
-            print >>f,only_one_sponsor_name
-        else:
-            for temp_i in range(0,len(sponsor_list)):
-                print >>f,sponsor_list[temp_i].get_text(strip=True)
-                print >>f,";"
+            #保荐人
+            sponsor_list=stock_list[i].find_all('td')[8].find_all('option')
+            if(len(sponsor_list)==0):
+                only_one_sponsor_name=stock_list[i].find_all('td')[8].get_text(strip=True)
+                #print >>f,only_one_sponsor_name
+                print>>f,str(stock_code)+","+str(stock_name)+","+str(stock_value)+","+str(ipo_list_date_2_print)+","+str(ipo_end_date_2_print)+","+str(stock_margin_interest)+","+str(stock_margin_sum)+","+str(only_one_sponsor_name)
+
+            else:
+                sponsor_list_2_print=str(sponsor_list[0].get_text(strip=True))
+                for temp_i in range(1,len(sponsor_list)):
+                    sponsor_list_2_print=sponsor_list_2_print+";"+str(sponsor_list[temp_i].get_text(strip=True))
+                print>>f,str(stock_code)+","+str(stock_name)+","+str(stock_value)+","+str(ipo_list_date_2_print)+","+str(ipo_end_date_2_print)+","+str(stock_margin_interest)+","+str(stock_margin_sum)+","+str(sponsor_list_2_print)
 
 f.close()
+
