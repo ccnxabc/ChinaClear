@@ -9,6 +9,8 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(chrome_options=chrome_options)
 
+#Need perfect network or program quit after some data collecting.
+#When program quit，edit new date and restart
 #start_day_2_get_index=datetime.date(2014,9,6)
 start_day_2_get_index=datetime.date(2016,8,31)
 
@@ -28,7 +30,7 @@ while start_day_2_get_index<datetime.date.today():
 
 	str_2_send=str(month_mm)+" "+str(day_dd)+","+" "+str(year_yyyy)
 	str_2_wrire_result=start_day_2_get_index.strftime("%Y-%m-%d")
-
+	
 	driver.find_element_by_id('templateForm:j_id__v_67').get_attribute('value')
 	driver.find_element_by_id('templateForm:j_id__v_67').clear()
 	driver.find_element_by_id('templateForm:j_id__v_67').get_attribute('value')
