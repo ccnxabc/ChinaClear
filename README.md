@@ -19,3 +19,5 @@ EWH.US 跟踪的是MSCI指数，非恒生指数，需要在网站获取。其中
 ![](media/e52e2dc97cbd5d2c1e13c96f5f9f60ae.png)
 
 ![](media/efeced8959d05b471b08ffae483cbafd.png)
+
+052fe20730679e901c922bcc816250e1.png
