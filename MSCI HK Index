@@ -9,14 +9,25 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(chrome_options=chrome_options)
 
-#Need perfect network or program quit after some data collecting.
-#When program quit，edit new date and restart
+out_file="c:\\9\\MSCI_HONGKONG_INDEX.csv"
+
+f=open(out_file,'r')
+lines=f.readlines()
+latest_date=lines[-1].split(",")[0]
+f.close()
+#Auto get latest date
+start_day_2_get_index=datetime.datetime.strptime(latest_date, "%Y-%m-%d").date()
+
+#08 is wrong, 8 is right
+#start_day_2_get_index=datetime.date(2018,8,11)
 #start_day_2_get_index=datetime.date(2014,9,6)
-start_day_2_get_index=datetime.date(2016,8,31)
+#start_day_2_get_index=datetime.date(2018,8,11)
+
+
 
 msci_hongkong_index_row=23
 
-out_file="c:\\9\\MSCI_HONGKONG_INDEX.csv"
+
 f=open(out_file,'a')
 
 url="https://app2.msci.com/webapp/indexperf/pages/IEIPerformanceCountry.jsf"
@@ -30,7 +41,7 @@ while start_day_2_get_index<datetime.date.today():
 
 	str_2_send=str(month_mm)+" "+str(day_dd)+","+" "+str(year_yyyy)
 	str_2_wrire_result=start_day_2_get_index.strftime("%Y-%m-%d")
-	
+
 	driver.find_element_by_id('templateForm:j_id__v_67').get_attribute('value')
 	driver.find_element_by_id('templateForm:j_id__v_67').clear()
 	driver.find_element_by_id('templateForm:j_id__v_67').get_attribute('value')
